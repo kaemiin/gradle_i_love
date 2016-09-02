@@ -20,56 +20,6 @@ compileJava {
   targetCompatibility = 1.8
 }
 
-jar {
-    baseName = archivesBaseName
-    manifest {
-        attributes'Implementation-Version': version
-        attributes 'Main-Class': 'kaemiin.gradle.Test'
-        
-        def manifestCp = configurations.runtime.files.collect {
-            File file = it
-            "lib/${file.name}"
-        }.join(' ')
-
-        configurations.runtime.getAllDependencies().withType(ProjectDependency).each {dep->
-
-            def depProj = dep.getDependencyProject()
-            def libFilePaths = project(depProj.path).libsDir.list().collect{ inFile-> "lib/${inFile}"  }.join(' ')
-            logger.info"Adding libs from project ${depProj.name}: [- ${libFilePaths} -]"
-            manifestCp += ' '+libFilePaths
-        }
-        
-        attributes 'Class-Path': manifestCp
-    }
-}
-
-test {
-
-    // explicitly include or exclude tests
-    //exclude 'kaemiin/gradle/test/**'
-
-    // show standard out and standard error of the test JVM(s) on the console
-    testLogging.showStandardStreams = true
-
-    // set heap size for the test JVM(s)
-    minHeapSize = "128m"
-    maxHeapSize = "512m"
-
-    // set JVM arguments for the test JVM(s)
-    jvmArgs '-XX:MaxPermSize=256m'
-
-    // listen to events in the test execution lifecycle
-    beforeTest { descriptor ->
-        logger.lifecycle("Running test: " + descriptor)
-    }
-
-    // listen to standard out and standard error of the test JVM(s)
-    onOutput { descriptor, event ->
-        logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message )
-    }
-}
-
-
 task initSourceFolders {
    sourceSets*.java.srcDirs*.each { it.mkdirs() }
    sourceSets*.resources.srcDirs*.each { it.mkdirs() }
